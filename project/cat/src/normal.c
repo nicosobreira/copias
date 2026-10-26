@@ -2,12 +2,25 @@
 
 #include "commom/error.h"
 
+#include <stdio.h>
+
 static inline void output_file(FILE *file, FILE *stream)
 {
     int c;
     while ((c = fgetc(file)) != EOF)
     {
-        fputc(c, stream);
+        int did_write = fputc(c, stream);
+
+        if (did_write == EOF && ferror(stream))
+        {
+            LOG_ERROR("I/O error while writing from stream");
+            return;
+        }
+    }
+
+    if (ferror(file))
+    {
+        LOG_ERROR("I/O error while reading from file");
     }
 }
 

@@ -2,54 +2,74 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "commom/buffer.h"
 #include "commom/error.h"
 
-/*
-static inline size_t my_getline(char **buffer, size_t *size, FILE *stream)
+static inline int get_line(char *buffer, size_t *len, FILE *file)
 {
     const char delimiter = '\n';
 
-    size_t i = 0;
+    size_t current_index = 0;
+
     char c;
-    while ((c = (char)fgetc(stream)) != delimiter)
+    while ((c = (char)fgetc(file)) != EOF)
     {
-        if (c == '\0')
+        if (current_index >= (*len))
+        {
+            *len += 1;
+            buffer = realloc(buffer, *len);
+        }
+
+        buffer[current_index] = c;
+        current_index += 1;
+
+        if (c == delimiter)
         {
             break;
         }
-
-        if (i >= *size)
-        {
-            *size = i + 1;
-            *buffer = realloc(*buffer, *size);
-        }
-
-        *buffer[i] = c;
-        i += 1;
     }
 
-    *buffer[i + 1] = '\0';
+    if (feof(file))
+    {
+        return 1;
+    }
 
-    return i + 1;
+    if (ferror(file))
+    {
+        LOG_ERROR("I/O error while reading file");
+        return 2;
+    }
+
+    // Need to add the '\0' at the end of buffer
+    current_index += 1;
+    if (current_index >= (*len))
+    {
+        *len += 1;
+        buffer = realloc(buffer, *len);
+    }
+    buffer[current_index] = '\0';
+
+    return 0;
 }
-*/
 
 static inline int output_file_number(FILE *file, FILE *stream, int total_lines)
 {
-    char *line = malloc(BUFFER_SIZE);
+    char *buffer = malloc(BUFFER_SIZE);
 
-    size_t line_size;
-    while ((line_size = getline(&line, &(size_t){BUFFER_SIZE}, file) != -1))
+    size_t buffer_size;
+    while ((get_line(buffer, &buffer_size, file) == 0))
     {
         fprintf(stream, "%8d  ", total_lines);
-        fputs(line, stream);
+        fputs(buffer, stream);
 
         total_lines += 1;
+
+        memset(buffer, 0, BUFFER_SIZE);
     }
 
-    free(line);
+    free(buffer);
 
     return total_lines;
 }
