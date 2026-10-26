@@ -1,5 +1,5 @@
 #pragma once
 
-#include "../parameters.h"
+#include "commom/parameters.h"
 
 void wc(Parameters *param);

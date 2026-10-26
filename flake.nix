@@ -28,6 +28,10 @@
 
               toolchain.clang-tools
             ];
+
+            buildInputs = [
+              pkgs.openssl
+            ];
           };
       }
     );

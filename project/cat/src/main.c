@@ -1,8 +1,10 @@
-#include <stdio.h>
+#include "cat.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
-    printf("Olá, cat!\n");
+    Parameters param = Parameters_FromArgv(argc, argv);
+
+    cat(&param);
 
     return 0;
 }

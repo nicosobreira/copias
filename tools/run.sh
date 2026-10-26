@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
-set -eou pipefail
+set -euo pipefail
 
-SCRIPT_NAME="$0"
+SCRIPT_NAME="$(basename "$0")"
+
+# Roda a partir da raiz do projeto (pai de tools/), de qualquer diretório
+cd "$(dirname "${BASH_SOURCE[0]}")/.."
 
 # ── Configuração ────────────────────────────────────────────────
-PROJECT_NAME="project-name"
-PROJECT_DIR="project"
-BUILD_DIR_DEBUG="build/debug"
-
-BINARY_DEBUG="${BUILD_DIR_DEBUG}/${PROJECT_DIR}/${PROJECT_NAME}"
+PRESET="dev"
+BINARY_DIR="build/debug/bin"
 
 # ── Utilitários ─────────────────────────────────────────────────
 log()  { echo -e "\e[1;34m[${SCRIPT_NAME}]\e[m $*"; }
@@ -24,80 +24,88 @@ require() {
 
 # ── Funções ──────────────────────────────────────────────────────
 run_workflow() {
-    local preset="$1"
-
     require cmake
+    log "Running workflow preset '${PRESET}'..."
+    cmake --workflow --preset "$PRESET"
+}
 
-    log "Configuring preset '${preset}'..."
-    cmake --workflow "$preset"
+# Recebe o nome do binário e imprime o caminho completo
+resolve_binary() {
+    local name="${1-}"
+    [[ -n "$name" ]] || { usage >&2; die "Missing binary name"; }
+
+    local path="${BINARY_DIR}/${name}"
+    [[ -x "$path" ]] || die "Binary not found: ${path}"
+    echo "$path"
 }
 
 run_debug() {
-    local -a args
-    args=("$@")
-
     require gdb
+    run_workflow
 
-    run_workflow "dev"
-
-    [[ -x "$BINARY_DEBUG" ]] || die "Binary not found: $BINARY_DEBUG"
-
-    local port
-    port=$(shuf -i 2000-65000 -n 1)
+    local binary
+    binary="$(resolve_binary "${1-}")"
+    shift
 
     if [[ -n "${TMUX-}" ]]; then
-        require gdbserver
+        require gdbserver tmux
 
-        log "Init gdbserver in port ${port}..."
-        tmux split-window -h -p 50 \
-            "exec gdbserver :${port} '${BINARY_DEBUG}' ${args[*]}"
+        local port cmd
+        port=$(shuf -i 2000-65000 -n 1)
+        # %q escapa cada argumento corretamente para o shell do tmux
+        cmd=$(printf '%q ' gdbserver ":${port}" "$binary" "$@")
+
+        log "Starting gdbserver on port ${port}..."
+        tmux split-window -h -l 50% "exec ${cmd}"
 
         sleep 0.2
-        tmux select-pane -t left
+        tmux select-pane -t '{left}'
 
-        gdb --tui -q \
-            -ex "file ${BINARY_DEBUG}" \
-            -ex "target remote :${port}" \
-
-        exit 0
+        gdb --tui -q "$binary" -ex "target remote :${port}"
     else
-        log "TMUX not detected - simple gui mode..."
-        gdb --tui -q --args "$BINARY_DEBUG" "${args[@]}"
+        log "TMUX not detected - running gdb directly..."
+        gdb --tui -q --args "$binary" "$@"
     fi
 }
 
 run() {
-    local -a args
-    args=("$@")
-    run_workflow "dev"
+    run_workflow
 
-    [[ -x "$BINARY_DEBUG" ]] || die "Binary not found: $BINARY_DEBUG"
+    local binary
+    binary="$(resolve_binary "${1-}")"
+    shift
 
-    log "Executing ${BINARY_DEBUG}..."
-
-    exec "$BINARY_DEBUG" "${args[@]}"
+    log "Executing ${binary}..."
+    exec "$binary" "$@"
 }
 
 usage() {
     cat <<EOF
-Usage: ${SCRIPT_NAME} [mode]
+Usage: ${SCRIPT_NAME} <mode> [binary] [args...]
 
 Modes:
-  run     | r    Build and execute  (padrão)
-  build   | b    Just build debug
-  debug   | d    Build debug and run gdb
+  run   | r  <binary> [args...]   Build and execute
+  debug | d  <binary> [args...]   Build and run under gdb
+  build | b                       Just build
+
+Binaries are looked up in ${BINARY_DIR}/.
 
 EOF
 }
 
 # ── Main ─────────────────────────────────────────────────────────
-MODE="${1-run}"
+if [[ $# -eq 0 ]]; then
+    usage
+    exit 1
+fi
 
+MODE="$1"
 shift
+
 case "$MODE" in
-    debug   | d) log "Debug";    run_debug "$@"   ;;
-    build   | b) log "Build";    run_workflow "dev" ;;
-    run     | r) log "Run";      run "$@"        ;;
-    help    | h) usage ;;
+    run   | r) run "$@" ;;
+    debug | d) run_debug "$@" ;;
+    build | b) run_workflow ;;
+    help  | h) usage ;;
     *) err "Unknown mode: '${MODE}'"; usage; exit 1 ;;
 esac

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <stdbool.h>
+
 typedef struct Parameters
 {
     int total;
@@ -11,13 +13,6 @@ static inline bool Parameters_IsEmpty(Parameters *param)
     return param->total <= 0;
 }
 
-static inline void Parameters_Shift(Parameters *param)
-{
-    if (Parameters_IsEmpty(param))
-    {
-        return;
-    }
+void Parameters_Shift(Parameters *param);
 
-    param->args += 1;
-    param->total -= 1;
-}
+Parameters Parameters_FromArgv(int argc, char **argv);

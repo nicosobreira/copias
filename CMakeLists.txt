@@ -4,9 +4,7 @@ project(project
   LANGUAGES C
 )
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
-include(AddProjectExecutable)
-include(AddProjectLibrary)
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_library(project_flags INTERFACE)
 
@@ -29,7 +27,7 @@ target_compile_options(project_flags INTERFACE
     -Wfloat-conversion
     -Wnull-dereference
     -Wimplicit-fallthrough
-    $<$<CONFIG:Debug>:-g3>
+    $<$<CONFIG:Debug>:-g>
     $<$<CONFIG:RelWithDebInfo>:-O3;-g;-fno-omit-frame-pointer>
   >
 
@@ -38,5 +36,9 @@ target_compile_options(project_flags INTERFACE
     /WX
   >
 )
+
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+include(AddProjectExecutable)
+include(AddProjectLibrary)
 
 add_subdirectory(project)

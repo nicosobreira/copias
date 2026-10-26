@@ -1,8 +1,10 @@
-#include <stdio.h>
+#include "wc.h"
 
-int main(void)
+int main(int argc, char **argv)
 {
-    printf("Olá, wc!\n");
+    Parameters param = Parameters_FromArgv(argc, argv);
+
+    wc(&param);
 
     return 0;
 }

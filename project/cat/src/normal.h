@@ -2,6 +2,6 @@
 
 #include <stdio.h>
 
-#include "../parameters.h"
+#include "commom/parameters.h"
 
 void show_files(Parameters param, FILE *stream);

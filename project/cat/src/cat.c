@@ -3,6 +3,8 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "commom/error.h"
+
 #include "normal.h"
 #include "with_numbers.h"
 
@@ -18,6 +20,12 @@ static inline void cat_help(void)
 
 void cat(Parameters *param)
 {
+    if (param->total == 0)
+    {
+        LOG_ERROR("Type at least one file");
+
+        return;
+    }
     if (strcmp(param->args[0], "--help") == 0)
     {
         cat_help();
