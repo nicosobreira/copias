@@ -1,5 +1,7 @@
 # Cópias de programas do Linux em C
 
+> Github: <https://github.com/nicosobreira/copias>
+
 Cópias dos seguintes programas comuns do Linux:
 
 - `cat`: concatena vários arquivos.
@@ -38,6 +40,8 @@ Decidi focar **apenas na parte da manipulação de arquivos** ao longo do projet
 - [c-algorithms](https://github.com/nicosobreira/c-algorithms): Algoritmos e Estruturas de Dados.
 - [c-matrix](https://github.com/nicosobreira/c-matrix): Biblioteca de Álgebra Linear.
 - [Typetest](https://github.com/nicosobreira/Typetest): Jogo de digitação no terminal.
+
+
 
 ### Cat
 
@@ -84,11 +88,13 @@ $ ./build/debug/bin/cat -n .envrc .gitignore
 
 Em `cat.c`, separamos o fluxo do programa em dois: com a opção `-n` vamos para `with_numbers.c`, caso contrário, para `normal.c`.
 
+
+
 #### `normal.c`
 
 > Exemplo mais simples de leitura de arquivos em C.
 
-[Código](#código-de-cat)
+[Código](#código-de-cat) | [Link](https://github.com/nicosobreira/copias/blob/main/project/cat/src/normal.c)
 
 Tudo começa na função `show_files`, que abre cada arquivo em `file_path` usando o `fopen(file_path, "r")`.
 
@@ -113,6 +119,8 @@ void show_files(Parameters param, FILE *stream)
 ```
 
 A documentação do [`fopen`](https://devdocs.io/c/io/fopen) diz que, em caso de **falha**, a função retornará um ponteiro `NULL`, e por isso precisamos agir adequadamente e abrir o próximo arquivo, se houver.
+
+
 
 Depois vamos para a função `output_file`, que irá copiar o conteúdo do recém-aberto `file` para `stream`; como estamos exibindo o resultado para o terminal, passamos `stdout` para o parâmetro `stream`, e por isso o conteúdo será acrescentado (*append*) a `stdout`. A função é definida da seguinte forma:
 
@@ -142,11 +150,13 @@ O *while loop* copia cada caractere `c` de `file` para `stream`, onde `fgetc` pe
 
 Por fim, temos que fechar o arquivo `file` que foi aberto em `show_files` com o `fclose`.
 
+
+
 #### `with_numbers.c`
 
 > Lendo linha por linha.
 
-[Código](#código-de-cat)
+[Código](#código-de-cat) | [Link](https://github.com/nicosobreira/copias/blob/main/project/cat/src/with_numbers.c)
 
 As funções `show_files_number` e `show_file_number` fazem a mesma coisa que `show_files` no exemplo anterior; a diferença está em `output_file_number`.
 
@@ -176,6 +186,8 @@ static inline int output_file_number(FILE *file, FILE *stream, int total_lines)
 ```
 
 Como é preciso contar cada linha do arquivo, não basta copiar caractere por caractere: precisamos saber onde cada linha termina. Por isso, `output_file_number` aloca um `buffer` com `malloc` (verificando se a alocação não falhou) e chama `get_line` em um *while loop*. Cada chamada lê **uma** linha de `file` para o `buffer` e retorna `0` quando conseguiu. O tamanho atual do `buffer` fica na variável `buffer_size`, inicializada com `BUFFER_SIZE`: é por ela que `get_line` sabe quanto espaço já existe. Enquanto as chamadas têm sucesso, imprimimos o número da linha com `fprintf` e o conteúdo com `fputs`.
+
+
 
 O formato `"%8d  "` reserva 8 colunas para o número, alinhado à direita, seguido de dois espaços; é esse alinhamento que imita a saída do `cat -n`. Depois de cada linha, incrementamos `total_lines`. Não precisamos limpar o `buffer` entre as chamadas, já que `get_line` sempre escreve o `'\0'` ao final da linha lida. Quando `get_line` avisa que não há mais linhas (ou que houve um erro), liberamos o `buffer` com `free` e devolvemos `total_lines`; assim, a numeração **continua** de onde parou quando passamos vários arquivos.
 
@@ -240,9 +252,11 @@ Como não sabemos o tamanho da linha de antemão, o `buffer` precisa crescer con
 
 Ao sair do loop, precisamos descobrir **por que** ele terminou, e é aí que `ferror` entra, como no exemplo anterior. A função retorna `2` se houve um erro de leitura (`ferror`), `1` se o arquivo acabou sem que nenhum caractere novo fosse lido e `0` se uma linha foi lida com sucesso. Isso permite que `output_file_number` use apenas `get_line(...) == 0` como condição do loop. Por fim, como `fputs` espera uma *string* de C, adicionamos o terminador `'\0'` ao final do `buffer`. Repare que a última linha de um arquivo sem `'\n'` final também é lida normalmente: o fim do arquivo só é reportado na chamada seguinte.
 
+
+
 ### Wc
 
-[Código](#código-de-wc)
+[Código](#código-de-wc) | [Link](https://github.com/nicosobreira/copias/blob/main/project/wc/src/wc.c)
 
 - **Estrutura do Projeto**:
 
@@ -272,7 +286,7 @@ $ echo "use flake" | ./build/debug/bin/wc
    1     2    10
 ```
 
----
+
 
 #### `count_file`
 
@@ -379,6 +393,8 @@ O `mygit` não está concluído: o comando `commit` ainda não faz nada e o cál
 └── src/hash                  # Cálculo do hash (OpenSSL)
 ```
 
+
+
 - **Exemplos de Uso**:
 
 ```
@@ -412,15 +428,21 @@ O *commit* depende de todas essas partes, mas ainda não foi implementado.
 
 #### `init`
 
+[Código](#código-de-mygitmygit) | [Link](https://github.com/nicosobreira/copias/blob/main/project/mygit/app/commands/init.h)
+
 > Criando os diretórios.
 
 O comando `init` precisa criar duas pastas: `.mygit` e, dentro dela, `objects`. Como a função de criação de diretórios muda de acordo com o sistema operacional (`mkdir` em sistemas POSIX e `_mkdir` no Windows), `directory.h` esconde essa diferença atrás da macro `CREATE_DIR`.
 
 Também em `directory.h`, o caminho de `objects` é montado a partir de `GIT_DIR_PATH`. Duas *strings* literais lado a lado são concatenadas pelo compilador, então `OBJECT_DIR_PATH` vale `"./.mygit/objects"` e, se o nome do repositório mudar, o ajuste é feito em um único lugar.
 
+
+
 #### `copy_file`
 
 > Escrevendo o conteúdo do arquivo em outro, em blocos.
+
+[Código](#código-de-mygitmygit) | [Link](https://github.com/nicosobreira/copias/blob/main/project/mygit/include/mygit/stage.h)
 
 No Cat, copiamos o conteúdo caractere por caractere com `fgetc` e `fputc`. Aqui o objetivo é gravar arquivos inteiros, então usamos [`fread`](https://devdocs.io/c/io/fread) e [`fwrite`](https://devdocs.io/c/io/fwrite), que operam sobre **blocos** de bytes: cada chamada lê até `sizeof(buffer)` bytes (`BUFFER_SIZE_LARGE`, 4096) de `src` e os grava em `dst`, em vez de uma chamada por caractere.
 
@@ -440,6 +462,8 @@ O comentário acima da função (`dst have to be in append mode!`) registra uma 
 
 #### `save_blob`
 
+[Código](#código-de-mygitmygit) | [Link](https://github.com/nicosobreira/copias/blob/main/project/mygit/include/mygit/stage.h)
+
 ``` c
 const char dir[2 + 1] = {hash[0], hash[1], '\0'};
 
@@ -451,13 +475,15 @@ CREATE_DIR(buffer);
 
 Primeiro separamos os dois primeiros caracteres do hash em `dir`, com o `'\0'` ao final para formar uma *string* válida. Depois `snprintf` monta `./.mygit/objects/ab` em `buffer`. Aqui, o retorno de `CREATE_DIR` é ignorado de propósito: se a subpasta já existe, porque outro objeto com o mesmo prefixo foi guardado antes, isso não é um erro.
 
+
+
 Em seguida, o restante do hash (`hash + 2`) é anexado ao caminho com um segundo `snprintf`, escrevendo a partir do fim da *string* atual, em `buffer + strlen(buffer)`. O tamanho restante é calculado com `sizeof(buffer) - strlen(buffer)` para que a escrita nunca ultrapasse o `buffer`.
 
 Por fim, abrimos o arquivo de saída com `fopen(buffer, "a")`. O modo `"a"` (*append*) cria o arquivo se ele não existir e posiciona a escrita sempre no fim. Caso `fopen` retorne `NULL`, reportamos o erro e saímos. Se o arquivo foi aberto, chamamos `copy_file` e fechamos com `fclose` **antes** de verificar o resultado, para que o arquivo seja liberado mesmo em caso de falha.
 
 #### `cmd_add` e o index
 
-> Registrando o que foi preparado.
+[Código](#código-de-mygitmygit) | [Link](https://github.com/nicosobreira/copias/blob/main/project/mygit/app/commands/add.h)
 
 ``` c
 char buffer[BUFFER_SIZE];
@@ -476,6 +502,8 @@ fprintf(index, "blob %.*s\n", (int)sizeof(hash), hash);
 O formato `%.*s` recebe a quantidade de caracteres como argumento (`(int)sizeof(hash)`, ou seja, 64). Isso é necessário porque `hash` é um vetor de `char` **sem `'\0'` ao final**: sem o limite explícito, `fprintf` continuaria lendo além do vetor. O mesmo formato é usado em `save_blob`. Antes de copiar o arquivo, `stage_file` usa `rewind` para voltá-lo ao início: o cálculo do hash já o percorreu e, sem isso, `copy_file` começaria a ler do ponto em que o hash parou.
 
 Se o `index` não puder ser aberto, `cmd_add` encerra com erro. Se `fopen` falhar para um arquivo, ou se `stage_file` falhar, o erro é reportado e o laço continua com o próximo, como em `show_files`. Ao final, `fclose(index)` descarrega o que ainda estava no *buffer* e libera o arquivo.
+
+
 
 #### O que falta
 
@@ -816,7 +844,7 @@ void wc(Parameters *param)
 
 ### Código de [Mygit](#mygit)
 
-`init.h`:
+- **`init.h`**:
 
 ``` c
 #pragma once
@@ -852,7 +880,7 @@ static inline int cmd_init(Parameters param)
 }
 ```
 
-`directory.h`:
+- **`directory.h`**:
 
 ``` c
 #pragma once
@@ -875,7 +903,7 @@ static inline int cmd_init(Parameters param)
 #endif
 ```
 
-`stage.h`:
+- **`stage.h`**:
 
 ``` c
 #pragma once
@@ -962,7 +990,7 @@ static inline int stage_file(FILE *index, FILE *file)
 }
 ```
 
-`add.h`:
+- **`add.h`**:
 
 ``` c
 #pragma once
