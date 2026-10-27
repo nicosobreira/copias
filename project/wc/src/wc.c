@@ -12,15 +12,6 @@ typedef struct Data
     int bytes;
 } Data;
 
-Data Data_New(void)
-{
-    return (Data){
-        .lines = 0,
-        .words = 0,
-        .bytes = 1, // The '\0' is at the end of every file
-    };
-}
-
 void Data_Sum(Data *result, Data plus)
 {
     result->lines += plus.lines;
@@ -59,13 +50,15 @@ static inline bool is_character(char c)
 
 Data count_file(FILE *file)
 {
-    Data data = Data_New();
+    Data data = {0};
     char previous_c = (char)fgetc(file);
+
     if (previous_c == EOF)
     {
-        data.lines += 1;
         return data;
     }
+
+    data.bytes = 1;
 
     char c;
     while ((c = (char)fgetc(file)) != EOF)

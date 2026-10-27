@@ -18,8 +18,6 @@ int blob_hash_from_buffer(char *out_hex, size_t out_hex_size, char *data, size_t
 
     unsigned char digest[HASH_LEN + 1];
 
-    memset(buffer, 0, sizeof(buffer));
-
     size_t digest_len = sizeof(digest);
 
     if (hash_string(buffer, buffer_size, digest, &digest_len) == 1)
