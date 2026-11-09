@@ -171,7 +171,7 @@ static inline int output_file_number(FILE *file, FILE *stream, int total_lines)
         return total_lines;
     }
 
-    while (get_line(&buffer, &buffer_size, file) == 0)
+    while (get_line(buffer, &buffer_size, file) == 0)
     {
         fprintf(stream, "%8d  ", total_lines);
         fputs(buffer, stream);
@@ -194,7 +194,7 @@ O formato `"%8d  "` reserva 8 colunas para o número, alinhado à direita, segui
 Agora vamos para `get_line`:
 
 ``` c
-static inline int get_line(char **buffer, size_t *len, FILE *file)
+static inline int get_line(char *buffer, size_t *len, FILE *file)
 {
     const char delimiter = '\n';
 
@@ -208,17 +208,17 @@ static inline int get_line(char **buffer, size_t *len, FILE *file)
         {
             *len += 1;
 
-            char *new_buffer = realloc(*buffer, *len);
+            char *new_buffer = realloc(buffer, *len);
             if (new_buffer == NULL)
             {
                 LOG_ERROR("Failed to allocate memory");
                 return 2;
             }
 
-            *buffer = new_buffer;
+            buffer = new_buffer;
         }
 
-        (*buffer)[current_index] = (char)c;
+        buffer[current_index] = (char)c;
         current_index += 1;
 
         if (c == delimiter)
@@ -240,7 +240,7 @@ static inline int get_line(char **buffer, size_t *len, FILE *file)
     }
 
     // Need to add the '\0' at the end of buffer
-    (*buffer)[current_index] = '\0';
+    buffer[current_index] = '\0';
 
     return 0;
 }
@@ -597,6 +597,7 @@ static inline int get_line(char **buffer, size_t *len, FILE *file)
                 return 2;
             }
 
+            // Without the double pointer, `*buffer` wouldn't point to the real `buffer` address.
             *buffer = new_buffer;
         }
 
