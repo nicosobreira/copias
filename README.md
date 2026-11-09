@@ -19,7 +19,7 @@ Garanta as seguintes dependências, ou use `nix develop` para baixá-las:
 Para compilar e executar, faça:
 
 > Considere:
-> - `<nome da cópia>`: qual cópia deseja executar.
+> - `<nome da cópia>`: cópia que deseja executar.
 > - `<parâmetros>`: os parâmetros para a cópia.
 
 ``` bash
