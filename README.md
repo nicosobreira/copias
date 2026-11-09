@@ -41,9 +41,9 @@ Decidi focar **apenas na parte da manipulação de arquivos** ao longo do projet
 - [c-matrix](https://github.com/nicosobreira/c-matrix): Biblioteca de Álgebra Linear.
 - [Typetest](https://github.com/nicosobreira/Typetest): Jogo de digitação no terminal.
 
-
-
 ### Cat
+
+[Código](#código-de-cat) | [Link](https://github.com/nicosobreira/copias/blob/main/project/cat/src/cat.c)
 
 - **Estrutura do Projeto**:
 
@@ -87,8 +87,6 @@ $ ./build/debug/bin/cat -n .envrc .gitignore
 ---
 
 Em `cat.c`, separamos o fluxo do programa em dois: com a opção `-n` vamos para `with_numbers.c`, caso contrário, para `normal.c`.
-
-
 
 #### `normal.c`
 
@@ -149,8 +147,6 @@ static inline void output_file(FILE *file, FILE *stream)
 O *while loop* copia cada caractere `c` de `file` para `stream`, onde `fgetc` pega o caractere e `fputc` o escreve em `stream`. As documentações das funções [`fgetc`](https://devdocs.io/c/io/fgetc) e [`fputc`](https://devdocs.io/c/io/fputc) dizem que, caso o arquivo tenha acabado ou algum erro tenha acontecido, o valor retornado será `EOF`, sendo que a diferenciação entre os dois casos é feita pelas funções [`feof`](https://devdocs.io/c/io/feof) e [`ferror`](https://devdocs.io/c/io/ferror), respectivamente. Como nesse exemplo o `EOF` indica que podemos sair da função, temos apenas que tratar os erros.
 
 Por fim, temos que fechar o arquivo `file` que foi aberto em `show_files` com o `fclose`.
-
-
 
 #### `with_numbers.c`
 
@@ -252,8 +248,6 @@ Como não sabemos o tamanho da linha de antemão, o `buffer` precisa crescer con
 
 Ao sair do loop, precisamos descobrir **por que** ele terminou, e é aí que `ferror` entra, como no exemplo anterior. A função retorna `2` se houve um erro de leitura (`ferror`), `1` se o arquivo acabou sem que nenhum caractere novo fosse lido e `0` se uma linha foi lida com sucesso. Isso permite que `output_file_number` use apenas `get_line(...) == 0` como condição do loop. Por fim, como `fputs` espera uma *string* de C, adicionamos o terminador `'\0'` ao final do `buffer`. Repare que a última linha de um arquivo sem `'\n'` final também é lida normalmente: o fim do arquivo só é reportado na chamada seguinte.
 
-
-
 ### Wc
 
 [Código](#código-de-wc) | [Link](https://github.com/nicosobreira/copias/blob/main/project/wc/src/wc.c)
@@ -285,8 +279,6 @@ Sem argumentos, lendo da entrada padrão:
 $ echo "use flake" | ./build/debug/bin/wc
    1     2    10
 ```
-
-
 
 #### `count_file`
 
@@ -371,6 +363,8 @@ Para cada arquivo aberto, `do_file_path` conta e imprime a linha correspondente,
 Sem argumentos, `do_stdin` chama `do_file(stdin, stdout)`. Como `count_file` só depende de um `FILE *`, não existe código específico para esse caso. A única diferença está em `Data_Print`: ao receber `NULL` no lugar do nome do arquivo, ela omite essa coluna.
 
 ### Mygit
+
+[Código](#código-de-mygit) | [Link](https://github.com/nicosobreira/copias/blob/main/project/mygit/app/main.c)
 
 O `mygit` não está concluído: o comando `commit` ainda não faz nada e o cálculo do hash tem limitações conhecidas (veja [O que falta](#o-que-falta)). Ele está aqui para demonstrar a **escrita** de arquivos: criação de diretórios, anexação a arquivos existentes e cópia de conteúdo.
 
